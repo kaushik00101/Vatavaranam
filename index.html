@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VATAVARANAM — Retro Weather Command Center</title>
+  <meta name="description" content="Retro-futuristic weather tracking command center" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- CRT Overlay -->
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+
+  <!-- Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen">
+    <div class="loader-inner">
+      <div class="loader-logo">VATAVARANAM</div>
+      <div class="loader-sub">INITIALIZING WEATHER COMMAND CENTER</div>
+      <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
+      <div class="loader-status" id="loaderStatus">CONNECTING TO SATELLITE NETWORK...</div>
+      <div class="loader-grid"></div>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo">
+      <span class="logo-bracket">[</span>
+      <span class="logo-text">VATAVARANAM</span>
+      <span class="logo-bracket">]</span>
+      <span class="logo-blink">_</span>
+    </div>
+    <div class="nav-links">
+      <a href="#dashboard" class="nav-link active" data-section="dashboard">DASHBOARD</a>
+      <a href="#forecast" class="nav-link" data-section="forecast">FORECAST</a>
+      <a href="#map-section" class="nav-link" data-section="map">MAP</a>
+      <a href="#analytics" class="nav-link" data-section="analytics">ANALYTICS</a>
+      <a href="#historical" class="nav-link" data-section="historical">HISTORY</a>
+    </div>
+    <div class="nav-controls">
+      <button class="nav-btn" id="soundToggle" title="Toggle Sound">♪</button>
+      <button class="nav-btn" id="favoritesBtn" title="Favorites">★</button>
+      <div class="nav-time" id="navTime">--:--:--</div>
+    </div>
+    <button class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#dashboard" class="mob-link">DASHBOARD</a>
+    <a href="#forecast" class="mob-link">FORECAST</a>
+    <a href="#map-section" class="mob-link">MAP</a>
+    <a href="#analytics" class="mob-link">ANALYTICS</a>
+    <a href="#historical" class="mob-link">HISTORY</a>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main>
+
+    <!-- ===== HERO / SEARCH SECTION ===== -->
+    <section id="dashboard" class="section hero-section">
+      <div class="hero-bg" id="heroBg"></div>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <div class="search-wrapper">
+          <span class="search-icon">◉</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="ENTER CITY / COORDINATES..." autocomplete="off" />
+          <button class="search-btn" id="searchBtn">SCAN</button>
+          <button class="location-btn" id="locationBtn" title="Auto-detect location">⌖</button>
+        </div>
+        <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+      </div>
+
+      <!-- Location Header -->
+      <div class="location-header">
+        <div class="location-name" id="locationName">AWAITING SIGNAL...</div>
+        <div class="location-meta" id="locationMeta">LAT: --.- | LON: --.- | ALT: ---m</div>
+        <div class="location-time" id="locationTime">LOCAL TIME: --:-- | --</div>
+      </div>
+
+      <!-- Main Weather Cards Grid -->
+      <div class="dashboard-grid">
+
+        <!-- PRIMARY TEMP CARD -->
+        <div class="card card-primary glow-card" id="tempCard">
+          <div class="card-header">
+            <span class="card-label">ATMOSPHERIC TEMP</span>
+            <span class="unit-toggle">
+              <button class="unit-btn active" id="celsiusBtn">°C</button>
+              <button class="unit-btn" id="fahrenheitBtn">°F</button>
+            </span>
+          </div>
+          <div class="temp-display">
+            <div class="temp-main" id="tempMain">--</div>
+            <div class="temp-unit" id="tempUnit">°C</div>
+          </div>
+          <div class="weather-icon-wrap" id="weatherIconWrap">
+            <div class="weather-icon" id="mainWeatherIcon">☁</div>
+          </div>
+          <div class="weather-desc" id="weatherDesc">INITIALIZING...</div>
+          <div class="weather-mood" id="weatherMood">WAITING...</div>
+          <div class="feels-like">FEELS LIKE: <span id="feelsLike">--</span><span id="feelsUnit">°C</span></div>
+          <div class="temp-range">
+            <span>↓ <span id="tempMin">--</span>°</span>
+            <div class="temp-bar"><div class="temp-fill" id="tempFill"></div></div>
+            <span>↑ <span id="tempMax">--</span>°</span>
+          </div>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="stats-grid">
+          <div class="stat-card glow-card" data-stat="humidity">
+            <div class="stat-icon">💧</div>
+            <div class="stat-label">HUMIDITY</div>
+            <div class="stat-value" id="humidity">--%</div>
+            <div class="stat-bar"><div class="stat-fill" id="humidityFill"></div></div>
+          </div>
+          <div class="stat-card glow-card" data-stat="wind">
+            <div class="stat-icon">💨</div>
+            <div class="stat-label">WIND SPEED</div>
+            <div class="stat-value" id="windSpeed">-- km/h</div>
+            <div class="stat-sub" id="windDir">DIR: ---</div>
+          </div>
+          <div class="stat-card glow-card" data-stat="pressure">
+            <div class="stat-icon">⬇</div>
+            <div class="stat-label">PRESSURE</div>
+            <div class="stat-value" id="pressure">-- hPa</div>
+            <div class="stat-sub" id="pressureTrend">STABLE</div>
+          </div>
+          <div class="stat-card glow-card" data-stat="visibility">
+            <div class="stat-icon">👁</div>
+            <div class="stat-label">VISIBILITY</div>
+            <div class="stat-value" id="visibility">-- km</div>
+            <div class="stat-sub" id="visibilityStatus">---</div>
+          </div>
+          <div class="stat-card glow-card" data-stat="uv">
+            <div class="stat-icon">☀</div>
+            <div class="stat-label">UV INDEX</div>
+            <div class="stat-value" id="uvIndex">--</div>
+            <div class="stat-sub" id="uvLevel">---</div>
+          </div>
+          <div class="stat-card glow-card" data-stat="cloud">
+            <div class="stat-icon">☁</div>
+            <div class="stat-label">CLOUD COVER</div>
+            <div class="stat-value" id="cloudCover">--%</div>
+            <div class="stat-bar"><div class="stat-fill cyan" id="cloudFill"></div></div>
+          </div>
+        </div>
+
+        <!-- SUN CARD -->
+        <div class="card sun-card glow-card">
+          <div class="card-header"><span class="card-label">SOLAR CYCLE</span></div>
+          <div class="sun-arc-wrap">
+            <svg class="sun-arc" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#ff6b35"/>
+                  <stop offset="100%" style="stop-color:#ffd700"/>
+                </linearGradient>
+              </defs>
+              <path class="arc-track" d="M 10 110 Q 100 10 190 110" fill="none" stroke="#1a0a2e" stroke-width="4"/>
+              <path class="arc-progress" d="M 10 110 Q 100 10 190 110" fill="none" stroke="url(#arcGrad)" stroke-width="4" stroke-dasharray="250" stroke-dashoffset="250" id="sunArcProgress"/>
+              <circle class="sun-ball" cx="10" cy="110" r="8" fill="#ffd700" id="sunBall"/>
+            </svg>
+          </div>
+          <div class="sun-times">
+            <div class="sun-time-item">
+              <span class="sun-icon">🌅</span>
+              <span class="sun-label">SUNRISE</span>
+              <span class="sun-time" id="sunrise">--:--</span>
+            </div>
+            <div class="sun-time-item">
+              <span class="sun-icon">🌇</span>
+              <span class="sun-label">SUNSET</span>
+              <span class="sun-time" id="sunset">--:--</span>
+            </div>
+          </div>
+          <div class="daylight-info">DAYLIGHT: <span id="daylightHours">-- hrs</span></div>
+        </div>
+
+        <!-- AIR QUALITY CARD -->
+        <div class="card air-card glow-card">
+          <div class="card-header"><span class="card-label">AIR QUALITY INDEX</span></div>
+          <div class="aqi-display">
+            <div class="aqi-gauge" id="aqiGauge">
+              <svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="aqiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#00ff87"/>
+                    <stop offset="50%" style="stop-color:#ffd700"/>
+                    <stop offset="100%" style="stop-color:#ff3366"/>
+                  </linearGradient>
+                </defs>
+                <path d="M 10 65 A 50 50 0 0 1 110 65" fill="none" stroke="#1a0a2e" stroke-width="8"/>
+                <path d="M 10 65 A 50 50 0 0 1 110 65" fill="none" stroke="url(#aqiGrad)" stroke-width="8" stroke-dasharray="157" stroke-dashoffset="0" opacity="0.3"/>
+                <path class="aqi-progress" d="M 10 65 A 50 50 0 0 1 110 65" fill="none" stroke="url(#aqiGrad)" stroke-width="8" stroke-dasharray="157" stroke-dashoffset="157" id="aqiProgress"/>
+                <text x="60" y="58" text-anchor="middle" class="aqi-num" id="aqiNum">--</text>
+              </svg>
+            </div>
+          </div>
+          <div class="aqi-status" id="aqiStatus">CALCULATING...</div>
+          <div class="aqi-details">
+            <div class="aqi-item"><span>PM2.5</span><span id="pm25">--</span></div>
+            <div class="aqi-item"><span>PM10</span><span id="pm10">--</span></div>
+            <div class="aqi-item"><span>CO</span><span id="co">--</span></div>
+            <div class="aqi-item"><span>NO₂</span><span id="no2">--</span></div>
+          </div>
+        </div>
+
+      </div><!-- end dashboard-grid -->
+
+      <!-- Favorites Bar -->
+      <div class="favorites-bar" id="favoritesBar">
+        <div class="fav-label">⭐ SAVED LOCATIONS:</div>
+        <div class="fav-list" id="favList"></div>
+        <button class="add-fav-btn" id="addFavBtn">+ ADD CURRENT</button>
+      </div>
+
+    </section>
+
+    <!-- ===== HOURLY FORECAST ===== -->
+    <section id="forecast" class="section forecast-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="title-bracket">//</span> TEMPORAL FORECAST MATRIX
+        </div>
+        <div class="forecast-tabs">
+          <button class="tab-btn active" data-tab="hourly">HOURLY</button>
+          <button class="tab-btn" data-tab="daily7">7-DAY</button>
+          <button class="tab-btn" data-tab="daily14">14-DAY</button>
+        </div>
+      </div>
+
+      <!-- Hourly -->
+      <div class="tab-panel active" id="tab-hourly">
+        <div class="hourly-scroll" id="hourlyScroll"></div>
+      </div>
+
+      <!-- 7-Day -->
+      <div class="tab-panel" id="tab-daily7">
+        <div class="daily-grid" id="daily7Grid"></div>
+      </div>
+
+      <!-- 14-Day -->
+      <div class="tab-panel" id="tab-daily14">
+        <div class="daily-grid" id="daily14Grid"></div>
+      </div>
+
+      <!-- Forecast Charts -->
+      <div class="charts-row">
+        <div class="chart-card glow-card">
+          <div class="chart-title">TEMPERATURE WAVE</div>
+          <canvas id="tempChart"></canvas>
+        </div>
+        <div class="chart-card glow-card">
+          <div class="chart-title">PRECIPITATION PROBABILITY</div>
+          <canvas id="rainChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Wind Chart -->
+      <div class="chart-card glow-card full-width-chart">
+        <div class="chart-title">WIND SPEED ANALYSIS</div>
+        <canvas id="windChart"></canvas>
+      </div>
+
+    </section>
+
+    <!-- ===== MAP SECTION ===== -->
+    <section id="map-section" class="section map-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="title-bracket">//</span> GLOBAL TERRAIN SCANNER
+        </div>
+        <div class="map-controls">
+          <button class="map-ctrl-btn active" data-layer="standard">STANDARD</button>
+          <button class="map-ctrl-btn" data-layer="satellite">SATELLITE</button>
+          <button class="map-ctrl-btn" data-layer="dark">DARK</button>
+        </div>
+      </div>
+      <div class="map-wrapper">
+        <div id="weatherMap"></div>
+        <div class="map-overlay-panel" id="mapOverlayPanel">
+          <div class="map-panel-title">CLICK ON MAP</div>
+          <div class="map-panel-content">Select any location to view weather data</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CLIMATE ANALYTICS ===== -->
+    <section id="analytics" class="section analytics-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="title-bracket">//</span> CLIMATE ANALYTICS ENGINE
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+
+        <!-- Monthly Averages -->
+        <div class="analytic-card glow-card wide">
+          <div class="analytic-title">MONTHLY TEMPERATURE AVERAGES</div>
+          <canvas id="monthlyChart"></canvas>
+        </div>
+
+        <!-- Seasonal Summary -->
+        <div class="analytic-card glow-card">
+          <div class="analytic-title">SEASONAL BREAKDOWN</div>
+          <div class="seasonal-grid" id="seasonalGrid"></div>
+        </div>
+
+        <!-- Climate Insights -->
+        <div class="analytic-card glow-card">
+          <div class="analytic-title">CLIMATE INSIGHTS</div>
+          <div class="insights-list" id="insightsList">
+            <div class="insight-item">⚡ Load weather data to generate insights</div>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="analytic-card glow-card wide">
+          <div class="analytic-title">TEMPERATURE HEATMAP (WEEK)</div>
+          <div class="heatmap-wrap" id="heatmapWrap"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== HISTORICAL WEATHER ===== -->
+    <section id="historical" class="section historical-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="title-bracket">//</span> TEMPORAL WEATHER ARCHIVE
+        </div>
+      </div>
+
+      <div class="historical-controls">
+        <div class="hist-input-group">
+          <label>START DATE</label>
+          <input type="date" id="histStartDate" class="hist-date-input" />
+        </div>
+        <div class="hist-input-group">
+          <label>END DATE</label>
+          <input type="date" id="histEndDate" class="hist-date-input" />
+        </div>
+        <button class="scan-btn" id="loadHistoricalBtn">⌖ RETRIEVE DATA</button>
+      </div>
+
+      <div class="historical-results" id="historicalResults">
+        <div class="hist-placeholder">
+          <div class="placeholder-icon">◈</div>
+          <div class="placeholder-text">SELECT DATE RANGE TO RETRIEVE HISTORICAL DATA</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-logo">VATAVARANAM v2.0</div>
+      <div class="footer-meta">RETRO WEATHER COMMAND CENTER | DATA: OPEN-METEO API | WMO WEATHER CODES</div>
+      <div class="footer-coords" id="footerCoords">SYS: ONLINE | LAT: -- | LON: --</div>
+    </div>
+  </footer>
+
+  <!-- Favorites Modal -->
+  <div class="modal" id="favModal">
+    <div class="modal-inner">
+      <div class="modal-title">⭐ SAVED LOCATIONS</div>
+      <div class="modal-list" id="modalFavList"></div>
+      <button class="modal-close" id="modalClose">CLOSE</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
