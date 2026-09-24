@@ -26,33 +26,33 @@ const STATE = {
 
 // -- WMO WEATHER CODE MAPPING --
 const WMO = {
-  0:  { label: 'CLEAR SKY',          icon: 'CLEAR', bg: 'sunny',  emoji: 'CLEAR', mood: 'SUNNY' },
-  1:  { label: 'MAINLY CLEAR',        icon: 'CLEAR', bg: 'sunny',  emoji: 'CLEAR', mood: 'SUNNY' },
-  2:  { label: 'PARTLY CLOUDY',       icon: 'CLOUDY', bg: 'cloudy', emoji: 'CLOUDY', mood: 'PARTLY CLOUDY' },
-  3:  { label: 'OVERCAST',            icon: 'CLOUD', bg: 'cloudy',  emoji: 'CLOUD', mood: 'CLOUDY' },
-  45: { label: 'FOG',                 icon: 'FOG', bg: 'foggy',  emoji: 'FOG', mood: 'FOGGY' },
-  48: { label: 'RIME FOG',            icon: 'FOG', bg: 'foggy',  emoji: 'FOG', mood: 'FOGGY' },
-  51: { label: 'LIGHT DRIZZLE',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  53: { label: 'MODERATE DRIZZLE',    icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  55: { label: 'DENSE DRIZZLE',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  61: { label: 'SLIGHT RAIN',         icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  63: { label: 'MODERATE RAIN',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  65: { label: 'HEAVY RAIN',          icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  71: { label: 'SLIGHT SNOW',         icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  73: { label: 'MODERATE SNOW',       icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  75: { label: 'HEAVY SNOW',          icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  77: { label: 'SNOW GRAINS',         icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  80: { label: 'SLIGHT SHOWERS',      icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  81: { label: 'MODERATE SHOWERS',    icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
-  82: { label: 'VIOLENT SHOWERS',     icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
-  85: { label: 'SNOW SHOWERS',        icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  86: { label: 'HEAVY SNOW SHOWERS',  icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
-  95: { label: 'THUNDERSTORM',        icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
-  96: { label: 'THUNDERSTORM + HAIL', icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
-  99: { label: 'THUNDERSTORM + HAIL', icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
+  0:  { label: 'CLEAR SKY',          icon: '☀️', bg: 'sunny',  emoji: '☀️', mood: 'SUNNY' },
+  1:  { label: 'MAINLY CLEAR',        icon: '🌤️', bg: 'sunny',  emoji: '🌤️', mood: 'SUNNY' },
+  2:  { label: 'PARTLY CLOUDY',       icon: '⛅', bg: 'cloudy', emoji: '⛅', mood: 'PARTLY CLOUDY' },
+  3:  { label: 'OVERCAST',            icon: '☁️', bg: 'cloudy',  emoji: '☁️', mood: 'CLOUDY' },
+  45: { label: 'FOG',                 icon: '🌫️', bg: 'foggy',  emoji: '🌫️', mood: 'FOGGY' },
+  48: { label: 'RIME FOG',            icon: '🌫️', bg: 'foggy',  emoji: '🌫️', mood: 'FOGGY' },
+  51: { label: 'LIGHT DRIZZLE',       icon: '🌦️', bg: 'rainy',  emoji: '🌦️', mood: 'RAINY' },
+  53: { label: 'MODERATE DRIZZLE',    icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  55: { label: 'DENSE DRIZZLE',       icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  61: { label: 'SLIGHT RAIN',         icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  63: { label: 'MODERATE RAIN',       icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  65: { label: 'HEAVY RAIN',          icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  71: { label: 'SLIGHT SNOW',         icon: '🌨️', bg: 'snowy',  emoji: '🌨️', mood: 'SNOWY' },
+  73: { label: 'MODERATE SNOW',       icon: '❄️', bg: 'snowy',  emoji: '❄️', mood: 'SNOWY' },
+  75: { label: 'HEAVY SNOW',          icon: '❄️', bg: 'snowy',  emoji: '❄️', mood: 'SNOWY' },
+  77: { label: 'SNOW GRAINS',         icon: '🌨️', bg: 'snowy',  emoji: '🌨️', mood: 'SNOWY' },
+  80: { label: 'SLIGHT SHOWERS',      icon: '🌦️', bg: 'rainy',  emoji: '🌦️', mood: 'RAINY' },
+  81: { label: 'MODERATE SHOWERS',    icon: '🌧️', bg: 'rainy',  emoji: '🌧️', mood: 'RAINY' },
+  82: { label: 'VIOLENT SHOWERS',     icon: '⛈️', bg: 'stormy', emoji: '⛈️', mood: 'STORMY' },
+  85: { label: 'SNOW SHOWERS',        icon: '🌨️', bg: 'snowy',  emoji: '🌨️', mood: 'SNOWY' },
+  86: { label: 'HEAVY SNOW SHOWERS',  icon: '❄️', bg: 'snowy',  emoji: '❄️', mood: 'SNOWY' },
+  95: { label: 'THUNDERSTORM',        icon: '⛈️', bg: 'stormy', emoji: '⛈️', mood: 'STORMY' },
+  96: { label: 'THUNDERSTORM + HAIL', icon: '⛈️', bg: 'stormy', emoji: '⛈️', mood: 'STORMY' },
+  99: { label: 'THUNDERSTORM + HAIL', icon: '⛈️', bg: 'stormy', emoji: '⛈️', mood: 'STORMY' },
 };
 
-const wmo = (code) => WMO[code] || { label: 'UNKNOWN', icon: 'UNKNOWN', bg: 'cloudy', emoji: 'UNKNOWN' };
+const wmo = (code) => WMO[code] || { label: 'UNKNOWN', icon: '☁️', bg: 'cloudy', emoji: '☁️' };
 
 // -- DOM REFS --
 const $ = (id) => document.getElementById(id);
@@ -951,7 +951,7 @@ function createSnow() {
   for (let i = 0; i < 30; i++) {
     const flake = document.createElement('div');
     flake.className = 'snowflake';
-    flake.textContent = 'SNOW';
+    flake.textContent = '❄️';
     flake.style.cssText = `
       left: ${Math.random() * 100}%;
       animation-duration: ${Math.random() * 4 + 4}s;

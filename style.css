@@ -228,7 +228,7 @@ canvas { max-width: 100%; }
 }
 .nav-time {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 22px;
   color: var(--accent-dark);
   letter-spacing: 0.08em;
   min-width: 80px;
@@ -902,7 +902,7 @@ main { padding-top: var(--nav-h); position: relative; z-index: 1; }
   justify-content: center;
   overflow-wrap: anywhere;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 22px;
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: 0.04em;
@@ -950,7 +950,7 @@ main { padding-top: var(--nav-h); position: relative; z-index: 1; }
   flex: 0 0 52px;
   min-width: 0;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 500;
   line-height: 1.2;
   overflow-wrap: anywhere;
