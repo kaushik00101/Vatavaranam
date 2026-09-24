@@ -1,11 +1,11 @@
 /* ================================================================
-   VATAVARANAM — Retro Futuristic Weather Command Center
+  VATAVARANAM - Retro Futuristic Weather Command Center
    script.js
 ================================================================ */
 
 'use strict';
 
-// ── GLOBAL STATE ──
+// -- GLOBAL STATE --
 const STATE = {
   lat: null,
   lon: null,
@@ -15,8 +15,6 @@ const STATE = {
   currentWeatherData: null,
   forecastData: null,
   hourlyData: null,
-  favorites: JSON.parse(localStorage.getItem('vata_favorites') || '[]'),
-  soundEnabled: false,
   map: null,
   mapMarker: null,
   charts: {},
@@ -26,64 +24,46 @@ const STATE = {
   currentRequestId: 0,
 };
 
-// ── WMO WEATHER CODE MAPPING ──
+// -- WMO WEATHER CODE MAPPING --
 const WMO = {
-  0:  { label: 'CLEAR SKY',          icon: '☀️', bg: 'sunny',  emoji: '☀', mood: 'SUNNY' },
-  1:  { label: 'MAINLY CLEAR',        icon: '🌤️', bg: 'sunny',  emoji: '🌤', mood: 'SUNNY' },
-  2:  { label: 'PARTLY CLOUDY',       icon: '⛅', bg: 'cloudy', emoji: '⛅', mood: 'PARTLY CLOUDY' },
-  3:  { label: 'OVERCAST',            icon: '☁️', bg: 'cloudy', emoji: '☁', mood: 'CLOUDY' },
-  45: { label: 'FOG',                 icon: '🌫️', bg: 'foggy',  emoji: '🌫', mood: 'FOGGY' },
-  48: { label: 'RIME FOG',            icon: '🌫️', bg: 'foggy',  emoji: '🌫', mood: 'FOGGY' },
-  51: { label: 'LIGHT DRIZZLE',       icon: '🌦️', bg: 'rainy',  emoji: '🌦', mood: 'RAINY' },
-  53: { label: 'MODERATE DRIZZLE',    icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  55: { label: 'DENSE DRIZZLE',       icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  61: { label: 'SLIGHT RAIN',         icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  63: { label: 'MODERATE RAIN',       icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  65: { label: 'HEAVY RAIN',          icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  71: { label: 'SLIGHT SNOW',         icon: '🌨️', bg: 'snowy',  emoji: '🌨', mood: 'SNOWY' },
-  73: { label: 'MODERATE SNOW',       icon: '❄️',  bg: 'snowy',  emoji: '❄', mood: 'SNOWY' },
-  75: { label: 'HEAVY SNOW',          icon: '❄️',  bg: 'snowy',  emoji: '❄', mood: 'SNOWY' },
-  77: { label: 'SNOW GRAINS',         icon: '🌨️', bg: 'snowy',  emoji: '🌨', mood: 'SNOWY' },
-  80: { label: 'SLIGHT SHOWERS',      icon: '🌦️', bg: 'rainy',  emoji: '🌦', mood: 'RAINY' },
-  81: { label: 'MODERATE SHOWERS',    icon: '🌧️', bg: 'rainy',  emoji: '🌧', mood: 'RAINY' },
-  82: { label: 'VIOLENT SHOWERS',     icon: '⛈️', bg: 'stormy', emoji: '⛈', mood: 'STORMY' },
-  85: { label: 'SNOW SHOWERS',        icon: '🌨️', bg: 'snowy',  emoji: '🌨', mood: 'SNOWY' },
-  86: { label: 'HEAVY SNOW SHOWERS',  icon: '❄️',  bg: 'snowy',  emoji: '❄', mood: 'SNOWY' },
-  95: { label: 'THUNDERSTORM',        icon: '⛈️', bg: 'stormy', emoji: '⛈', mood: 'STORMY' },
-  96: { label: 'THUNDERSTORM + HAIL', icon: '⛈️', bg: 'stormy', emoji: '⛈', mood: 'STORMY' },
-  99: { label: 'THUNDERSTORM + HAIL', icon: '⛈️', bg: 'stormy', emoji: '⛈', mood: 'STORMY' },
+  0:  { label: 'CLEAR SKY',          icon: 'CLEAR', bg: 'sunny',  emoji: 'CLEAR', mood: 'SUNNY' },
+  1:  { label: 'MAINLY CLEAR',        icon: 'CLEAR', bg: 'sunny',  emoji: 'CLEAR', mood: 'SUNNY' },
+  2:  { label: 'PARTLY CLOUDY',       icon: 'CLOUDY', bg: 'cloudy', emoji: 'CLOUDY', mood: 'PARTLY CLOUDY' },
+  3:  { label: 'OVERCAST',            icon: 'CLOUD', bg: 'cloudy',  emoji: 'CLOUD', mood: 'CLOUDY' },
+  45: { label: 'FOG',                 icon: 'FOG', bg: 'foggy',  emoji: 'FOG', mood: 'FOGGY' },
+  48: { label: 'RIME FOG',            icon: 'FOG', bg: 'foggy',  emoji: 'FOG', mood: 'FOGGY' },
+  51: { label: 'LIGHT DRIZZLE',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  53: { label: 'MODERATE DRIZZLE',    icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  55: { label: 'DENSE DRIZZLE',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  61: { label: 'SLIGHT RAIN',         icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  63: { label: 'MODERATE RAIN',       icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  65: { label: 'HEAVY RAIN',          icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  71: { label: 'SLIGHT SNOW',         icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  73: { label: 'MODERATE SNOW',       icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  75: { label: 'HEAVY SNOW',          icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  77: { label: 'SNOW GRAINS',         icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  80: { label: 'SLIGHT SHOWERS',      icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  81: { label: 'MODERATE SHOWERS',    icon: 'RAIN', bg: 'rainy',  emoji: 'RAIN', mood: 'RAINY' },
+  82: { label: 'VIOLENT SHOWERS',     icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
+  85: { label: 'SNOW SHOWERS',        icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  86: { label: 'HEAVY SNOW SHOWERS',  icon: 'SNOW', bg: 'snowy',  emoji: 'SNOW', mood: 'SNOWY' },
+  95: { label: 'THUNDERSTORM',        icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
+  96: { label: 'THUNDERSTORM + HAIL', icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
+  99: { label: 'THUNDERSTORM + HAIL', icon: 'STORM', bg: 'stormy', emoji: 'STORM', mood: 'STORMY' },
 };
 
-const wmo = (code) => WMO[code] || { label: 'UNKNOWN', icon: '❓', bg: 'cloudy', emoji: '❓' };
+const wmo = (code) => WMO[code] || { label: 'UNKNOWN', icon: 'UNKNOWN', bg: 'cloudy', emoji: 'UNKNOWN' };
 
-// ── DOM REFS ──
+// -- DOM REFS --
 const $ = (id) => document.getElementById(id);
 
-// ── LOADING SCREEN ──
+// -- LOADING SCREEN --
 function initLoader() {
-  const statuses = [
-    'CONNECTING TO SATELLITE NETWORK...',
-    'CALIBRATING ATMOSPHERIC SENSORS...',
-    'LOADING TERRAIN DATABASE...',
-    'INITIALIZING CLIMATE MATRIX...',
-    'WARMING UP RETRO CIRCUITS...',
-    'SYSTEM READY.',
-  ];
-  let i = 0;
   const bar = $('loaderBar');
   const status = $('loaderStatus');
-
-  const step = () => {
-    if (i >= statuses.length) {
-      hideLoader();
-      return;
-    }
-    status.textContent = statuses[i];
-    bar.style.width = `${((i + 1) / statuses.length) * 100}%`;
-    i++;
-    setTimeout(step, i === statuses.length ? 800 : 600);
-  };
-  step();
+  status.textContent = 'LOADING...';
+  bar.style.width = '100%';
+  setTimeout(hideLoader, 700);
 }
 
 function hideLoader() {
@@ -93,7 +73,7 @@ function hideLoader() {
   setTimeout(() => { loader.style.display = 'none'; initApp(); }, 800);
 }
 
-// ── PARTICLE SYSTEM ──
+// -- PARTICLE SYSTEM --
 function initParticles() {
   const canvas = $('particleCanvas');
   const ctx = canvas.getContext('2d');
@@ -147,7 +127,7 @@ function initParticles() {
   animate();
 }
 
-// ── CLOCK ──
+// -- CLOCK --
 function initClock() {
   const update = () => {
     const now = new Date();
@@ -159,7 +139,7 @@ function initClock() {
   setInterval(update, 1000);
 }
 
-// ── NAVBAR ──
+// -- NAVBAR --
 function initNavbar() {
   const links = document.querySelectorAll('.nav-link, .mob-link');
   links.forEach(link => {
@@ -191,13 +171,20 @@ function initNavbar() {
   });
 }
 
-// ── GEOCODING / SEARCH ──
+// -- GEOCODING / SEARCH --
 async function geocodeCity(query) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=en&format=json`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Geocoding failed');
   const data = await res.json();
   return data.results || [];
+}
+
+function simpleSearchText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\x20-\x7E]/g, '');
 }
 
 function initSearch() {
@@ -209,9 +196,8 @@ function initSearch() {
     if (!items.length) { dropdown.classList.remove('visible'); return; }
     dropdown.innerHTML = items.map((r, i) => `
       <div class="ac-item" data-index="${i}">
-        <span class="ac-icon">📍</span>
-        <span>${r.name}${r.admin1 ? ', ' + r.admin1 : ''}</span>
-        <span class="ac-sub">${r.country || ''}</span>
+        <span>${simpleSearchText(r.name)}${r.admin1 ? ', ' + simpleSearchText(r.admin1) : ''}</span>
+        <span class="ac-sub">${simpleSearchText(r.country)}</span>
       </div>
     `).join('');
     dropdown.classList.add('visible');
@@ -278,28 +264,28 @@ function initSearch() {
     const q = input.value.trim();
     if (!q) return;
     try {
-      showToast('🔍 SCANNING...', false);
+      showToast('SCANNING...', false);
       const results = await geocodeCity(q);
       if (results.length) {
         selectResult(results[0]);
       } else {
-        showToast('❌ LOCATION NOT FOUND', true);
+        showToast('LOCATION NOT FOUND', true);
       }
     } catch {
-      showToast('❌ SEARCH ERROR', true);
+      showToast('SEARCH ERROR', true);
     }
   });
 
   $('locationBtn').addEventListener('click', () => {
-    if (!navigator.geolocation) { showToast('❌ GEOLOCATION NOT SUPPORTED', true); return; }
-    showToast('⌖ DETECTING LOCATION...', false);
+    if (!navigator.geolocation) { showToast('GEOLOCATION NOT SUPPORTED', true); return; }
+    showToast('DETECTING LOCATION...', false);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         const name = await reverseGeocode(latitude, longitude);
         loadWeather(latitude, longitude, name, '');
       },
-      () => showToast('❌ LOCATION ACCESS DENIED', true),
+      () => showToast('LOCATION ACCESS DENIED', true),
       { timeout: 10000 }
     );
   });
@@ -317,15 +303,19 @@ async function reverseGeocode(lat, lon) {
   }
 }
 
+function normalizeCityName(city) {
+  return city.toLowerCase().includes('bhubaneswar') ? 'Bhubaneswar' : city;
+}
+
 function setSearchLoadingState(city, lat, lon, timezone = 'AUTO') {
   $('locationName').textContent = city ? city.toUpperCase() : 'SEARCHING...';
   $('locationMeta').textContent = `LAT: ${lat.toFixed(4)} | LON: ${lon.toFixed(4)} | TZ: ${timezone}`;
   $('locationTime').textContent = 'LOCAL TIME: --:-- | --';
   $('tempMain').textContent = '--';
   $('weatherDesc').textContent = 'SEARCHING...';
-  if ($('weatherMood')) $('weatherMood').textContent = '⌛ LOADING...';
+  if ($('weatherMood')) $('weatherMood').textContent = 'LOADING...';
   $('feelsLike').textContent = '--';
-  if ($('feelsUnit')) $('feelsUnit').textContent = STATE.isCelsius ? '°C' : '°F';
+  if ($('feelsUnit')) $('feelsUnit').textContent = STATE.isCelsius ? 'C' : 'F';
   $('tempMin').textContent = '--';
   $('tempMax').textContent = '--';
   $('tempFill').style.width = '5%';
@@ -346,16 +336,17 @@ function setSearchLoadingState(city, lat, lon, timezone = 'AUTO') {
   $('daylightHours').textContent = '-- hrs';
 }
 
-// ── MAIN WEATHER LOADER ──
+// -- MAIN WEATHER LOADER --
 async function loadWeather(lat, lon, city, country) {
   const requestId = ++STATE.currentRequestId;
+  city = normalizeCityName(city);
   STATE.lat = lat;
   STATE.lon = lon;
   STATE.city = city;
   STATE.country = country;
 
   setSearchLoadingState(city, lat, lon);
-  showToast(`📡 FETCHING DATA FOR ${city.toUpperCase()}...`, false);
+  showToast(`FETCHING DATA FOR ${city.toUpperCase()}...`, false);
 
   try {
     // Fetch current + hourly + daily forecast
@@ -381,11 +372,11 @@ async function loadWeather(lat, lon, city, country) {
     updateWeatherEffects(weather.current.weather_code, weather.current.precipitation_probability);
     updateFooter(lat, lon);
 
-    showToast(`✓ ${city.toUpperCase()} DATA LOADED`, false);
+    showToast(`${city.toUpperCase()} DATA LOADED`, false);
   } catch (err) {
     if (STATE.currentRequestId !== requestId) return;
     console.error(err);
-    showToast('❌ FETCH FAILED — CHECK CONNECTION', true);
+    showToast('FETCH FAILED - CHECK CONNECTION', true);
   }
 }
 
@@ -460,7 +451,7 @@ async function fetchAirQuality(lat, lon) {
   } catch { return null; }
 }
 
-// ── UPDATE DASHBOARD ──
+// -- UPDATE DASHBOARD --
 function updateDashboard(weather, aq, city, country, lat, lon) {
   const cur = weather.current;
   const daily = weather.daily;
@@ -471,7 +462,7 @@ function updateDashboard(weather, aq, city, country, lat, lon) {
   updateLocationTime(weather.timezone);
 
   // Temperature
-  const unit = STATE.isCelsius ? '°C' : '°F';
+  const unit = STATE.isCelsius ? 'C' : 'F';
   const t = STATE.isCelsius ? cur.temperature_2m : c2f(cur.temperature_2m);
   const fl = STATE.isCelsius ? cur.apparent_temperature : c2f(cur.apparent_temperature);
   const tmin = STATE.isCelsius ? daily.temperature_2m_min[0] : c2f(daily.temperature_2m_min[0]);
@@ -500,7 +491,7 @@ function updateDashboard(weather, aq, city, country, lat, lon) {
   $('windSpeed').textContent = `${Math.round(cur.wind_speed_10m)} km/h`;
   $('windDir').textContent = `DIR: ${degToCompass(cur.wind_direction_10m)}`;
   $('pressure').textContent = `${Math.round(cur.surface_pressure)} hPa`;
-  $('pressureTrend').textContent = cur.surface_pressure > 1013 ? '▲ HIGH' : cur.surface_pressure < 1000 ? '▼ LOW' : 'STABLE';
+  $('pressureTrend').textContent = cur.surface_pressure > 1013 ? 'UP HIGH' : cur.surface_pressure < 1000 ? 'DOWN LOW' : 'STABLE';
   $('visibility').textContent = cur.visibility >= 1000
     ? `${(cur.visibility / 1000).toFixed(1)} km`
     : `${cur.visibility} m`;
@@ -535,7 +526,6 @@ function updateDashboard(weather, aq, city, country, lat, lon) {
     $('no2').textContent = (aq.current.nitrogen_dioxide ?? '--').toString().slice(0,5);
   }
 
-  updateFavoriteBar();
   updateClimateInsights(weather);
 }
 
@@ -573,7 +563,7 @@ function animateSunArc(sunrise, sunset) {
   $('sunBall').setAttribute('cy', cy);
 }
 
-// ── FORECAST ──
+// -- FORECAST --
 function updateForecast(weather) {
   renderHourly(weather);
   renderDailyGrid(weather, 7, 'daily7Grid');
@@ -599,8 +589,8 @@ function renderHourly(weather) {
       <div class="hourly-card ${isNow ? 'now' : ''}">
         <div class="hc-time">${label}</div>
         <div class="hc-icon">${w.icon}</div>
-        <div class="hc-temp">${temp}°</div>
-        <div class="hc-rain">💧${rain}%</div>
+        <div class="hc-temp">${temp}</div>
+        <div class="hc-rain">RAIN ${rain}%</div>
       </div>
     `);
   }
@@ -626,16 +616,16 @@ function renderDailyGrid(weather, days, containerId) {
         <div class="dr-day">${label}</div>
         <div class="dr-icon">${w.icon}</div>
         <div class="dr-desc">${w.label}</div>
-        <div class="dr-rain">💧 ${rain}%</div>
+        <div class="dr-rain">RAIN ${rain}%</div>
         <div class="dr-bar-wrap"><div class="dr-bar" style="width:${Math.min(100,((tmax+30)/(60))*100)}%"></div></div>
-        <div class="dr-temp">${tmin}° / ${tmax}°</div>
+        <div class="dr-temp">${tmin} / ${tmax}</div>
       </div>
     `);
   }
   container.innerHTML = html.join('');
 }
 
-// ── CHARTS ──
+// -- CHARTS --
 function updateCharts(weather) {
   const hours = weather.hourly;
   const labels = hours.time.slice(0, 48).map(t => {
@@ -731,7 +721,7 @@ function updateCharts(weather) {
   });
 }
 
-// ── ANALYTICS ──
+// -- ANALYTICS --
 function updateAnalytics(weather) {
   renderMonthlyChart(weather);
   renderSeasonalGrid(weather);
@@ -825,10 +815,10 @@ function renderSeasonalGrid(weather) {
   const q = Math.floor(len / 4) || 1;
 
   const seasons = [
-    { name: 'SPRING', icon: '🌸', temps: allTemps.slice(0, q) },
-    { name: 'SUMMER', icon: '☀️', temps: allTemps.slice(q, q * 2) },
-    { name: 'AUTUMN', icon: '🍂', temps: allTemps.slice(q * 2, q * 3) },
-    { name: 'WINTER', icon: '❄️', temps: allTemps.slice(q * 3) },
+    { name: 'SPRING', icon: 'SPRING', temps: allTemps.slice(0, q) },
+    { name: 'SUMMER', icon: 'SUMMER', temps: allTemps.slice(q, q * 2) },
+    { name: 'AUTUMN', icon: 'AUTUMN', temps: allTemps.slice(q * 2, q * 3) },
+    { name: 'WINTER', icon: 'WINTER', temps: allTemps.slice(q * 3) },
   ];
 
   $('seasonalGrid').innerHTML = seasons.map(s => {
@@ -837,7 +827,7 @@ function renderSeasonalGrid(weather) {
       <div class="season-card">
         <div class="season-icon">${s.icon}</div>
         <div class="season-name">${s.name}</div>
-        <div class="season-temp">${t}°</div>
+        <div class="season-temp">${t}</div>
       </div>
     `;
   }).join('');
@@ -852,25 +842,25 @@ function updateClimateInsights(weather) {
   const minTemp = Math.min(...daily.temperature_2m_min);
   const avgRain = daily.precipitation_probability_max.reduce((a,b)=>a+b,0) / daily.precipitation_probability_max.length;
 
-  if (maxTemp > 35) insights.push('⚠ EXTREME HEAT expected this week — stay hydrated');
-  if (minTemp < 0) insights.push('❄ FREEZING TEMPERATURES forecast — ice risk possible');
-  if (cur.uv_index >= 8) insights.push('🔆 VERY HIGH UV INDEX — sun protection essential');
-  if (cur.wind_speed_10m > 50) insights.push('💨 STRONG WINDS detected — outdoor activities risky');
-  if (avgRain > 60) insights.push('🌧 HIGH PRECIPITATION probability this week');
-  if (cur.relative_humidity_2m > 80) insights.push('💧 HIGH HUMIDITY — heat feels significantly hotter');
-  if (cur.relative_humidity_2m < 30) insights.push('🏜 LOW HUMIDITY — dry air conditions detected');
-  if (cur.cloud_cover < 20) insights.push('☀ CLEAR SKIES — excellent conditions for outdoor activities');
-  if (cur.visibility < 1000) insights.push('🌫 LOW VISIBILITY — reduced sight conditions active');
-  if (cur.surface_pressure < 995) insights.push('📉 LOW PRESSURE SYSTEM — weather change incoming');
+  if (maxTemp > 35) insights.push('WARNING: EXTREME HEAT expected this week - stay hydrated');
+  if (minTemp < 0) insights.push('WARNING: FREEZING TEMPERATURES forecast - ice risk possible');
+  if (cur.uv_index >= 8) insights.push('WARNING: VERY HIGH UV INDEX - sun protection essential');
+  if (cur.wind_speed_10m > 50) insights.push('WARNING: STRONG WINDS detected - outdoor activities risky');
+  if (avgRain > 60) insights.push('WARNING: HIGH PRECIPITATION probability this week');
+  if (cur.relative_humidity_2m > 80) insights.push('WARNING: HIGH HUMIDITY - heat feels significantly hotter');
+  if (cur.relative_humidity_2m < 30) insights.push('WARNING: LOW HUMIDITY - dry air conditions detected');
+  if (cur.cloud_cover < 20) insights.push('NOTICE: CLEAR SKIES - excellent conditions for outdoor activities');
+  if (cur.visibility < 1000) insights.push('WARNING: LOW VISIBILITY - reduced sight conditions active');
+  if (cur.surface_pressure < 995) insights.push('WARNING: LOW PRESSURE SYSTEM - weather change incoming');
 
-  if (!insights.length) insights.push('✓ STABLE CONDITIONS — no weather alerts for this area');
+  if (!insights.length) insights.push('STABLE CONDITIONS - no weather alerts for this area');
 
   $('insightsList').innerHTML = insights.slice(0, 6).map(i => `
     <div class="insight-item">${i}</div>
   `).join('');
 }
 
-// ── HEATMAP ──
+// -- HEATMAP --
 function renderHeatmap(weather) {
   const container = $('heatmapWrap');
   const days = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
@@ -890,7 +880,7 @@ function renderHeatmap(weather) {
       const temp = hours.temperature_2m[idx] ?? 15;
       const col = tempToColor(temp);
       const unit = STATE.isCelsius ? Math.round(temp) : Math.round(c2f(temp));
-      html += `<div class="hm-cell" style="background:${col}" title="${unit}°"></div>`;
+      html += `<div class="hm-cell" style="background:${col}" title="${unit}"></div>`;
     }
   }
 
@@ -909,7 +899,7 @@ function tempToColor(t) {
   return 'rgba(255, 60, 60, 0.8)';
 }
 
-// ── HERO BACKGROUND ──
+// -- HERO BACKGROUND --
 function updateHeroBg(code) {
   const bg = wmo(code).bg;
   const heroBg = $('heroBg');
@@ -926,7 +916,7 @@ function updateHeroBg(code) {
   heroBg.style.background = `${gradients[bg] || gradients.cloudy}, var(--bg-primary)`;
 }
 
-// ── WEATHER EFFECTS ──
+// -- WEATHER EFFECTS --
 function updateWeatherEffects(code, precipProb = 0) {
   clearWeatherEffects();
   const bg = wmo(code).bg;
@@ -961,7 +951,7 @@ function createSnow() {
   for (let i = 0; i < 30; i++) {
     const flake = document.createElement('div');
     flake.className = 'snowflake';
-    flake.textContent = ['❄','❅','❆'][Math.floor(Math.random() * 3)];
+    flake.textContent = 'SNOW';
     flake.style.cssText = `
       left: ${Math.random() * 100}%;
       animation-duration: ${Math.random() * 4 + 4}s;
@@ -973,7 +963,7 @@ function createSnow() {
   }
 }
 
-// ── MAP ──
+// -- MAP --
 function initMap() {
   const map = L.map('weatherMap', {
     center: [20, 0],
@@ -984,12 +974,12 @@ function initMap() {
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   const layers = {
-    standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OSM' }),
-    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri' }),
-    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© Carto' }),
+    standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' }),
+    satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' }),
+    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: 'Carto' }),
   };
 
-  layers.dark.addTo(map);
+  layers.standard.addTo(map);
   STATE.map = map;
   STATE.mapLayers = layers;
 
@@ -1016,7 +1006,7 @@ function initMap() {
 async function showMapPanel(lat, lon, name) {
   const panel = $('mapOverlayPanel');
   panel.innerHTML = `
-    <div class="map-panel-title">📍 ${name.toUpperCase()}</div>
+    <div class="map-panel-title">${name.toUpperCase()}</div>
     <div class="map-panel-content">
       <div class="map-weather-row"><span>LAT</span><span>${lat.toFixed(4)}</span></div>
       <div class="map-weather-row"><span>LON</span><span>${lon.toFixed(4)}</span></div>
@@ -1041,7 +1031,7 @@ async function showMapPanel(lat, lon, name) {
       <div class="map-panel-title">${w.icon} ${name.toUpperCase()}</div>
       <div class="map-panel-content map-weather-detail">
         <div class="map-weather-row"><span>CONDITION</span><span>${w.label}</span></div>
-        <div class="map-weather-row"><span>TEMPERATURE</span><span>${t}°${STATE.isCelsius?'C':'F'}</span></div>
+        <div class="map-weather-row"><span>TEMPERATURE</span><span>${t} ${STATE.isCelsius?'C':'F'}</span></div>
         <div class="map-weather-row"><span>WIND</span><span>${Math.round(cur.wind_speed_10m)} km/h</span></div>
         <div class="map-weather-row"><span>LAT</span><span>${lat.toFixed(4)}</span></div>
         <div class="map-weather-row"><span>LON</span><span>${lon.toFixed(4)}</span></div>
@@ -1071,7 +1061,7 @@ function updateMapMarker(lat, lon) {
   STATE.map.flyTo([lat, lon], Math.max(STATE.map.getZoom(), 8), { duration: 1.5 });
 }
 
-// ── HISTORICAL ──
+// -- HISTORICAL --
 function initHistorical() {
   const today = new Date();
   const oneWeekAgo = new Date(today);
@@ -1081,15 +1071,15 @@ function initHistorical() {
   $('histStartDate').value = oneWeekAgo.toISOString().split('T')[0];
 
   $('loadHistoricalBtn').addEventListener('click', async () => {
-    if (!STATE.lat) { showToast('⚠ LOAD A LOCATION FIRST', true); return; }
+    if (!STATE.lat) { showToast('WARNING: LOAD A LOCATION FIRST', true); return; }
     const start = $('histStartDate').value;
     const end = $('histEndDate').value;
-    if (!start || !end) { showToast('⚠ SELECT DATE RANGE', true); return; }
-    if (start > end) { showToast('⚠ START MUST BE BEFORE END', true); return; }
+    if (!start || !end) { showToast('WARNING: SELECT DATE RANGE', true); return; }
+    if (start > end) { showToast('WARNING: START MUST BE BEFORE END', true); return; }
 
     const btn = $('loadHistoricalBtn');
     btn.disabled = true;
-    btn.textContent = '⏳ RETRIEVING...';
+    btn.textContent = 'RETRIEVING...';
 
     try {
       const params = new URLSearchParams({
@@ -1104,13 +1094,13 @@ function initHistorical() {
       if (!res.ok) throw new Error('Archive API error');
       const data = await res.json();
       renderHistorical(data, start, end);
-      showToast('✓ HISTORICAL DATA LOADED', false);
+      showToast('HISTORICAL DATA LOADED', false);
     } catch (err) {
-      showToast('❌ FAILED TO LOAD HISTORICAL DATA', true);
+      showToast('FAILED TO LOAD HISTORICAL DATA', true);
       console.error(err);
     } finally {
       btn.disabled = false;
-      btn.textContent = '⌖ RETRIEVE DATA';
+      btn.textContent = 'RETRIEVE DATA';
     }
   });
 }
@@ -1134,25 +1124,25 @@ function renderHistorical(data, start, end) {
 
   container.innerHTML = `
     <div class="hist-chart-card">
-      <div class="chart-title">TEMPERATURE HISTORY: ${start} → ${end}</div>
+      <div class="chart-title">TEMPERATURE HISTORY: ${start} TO ${end}</div>
       <canvas id="histChart"></canvas>
     </div>
     <div class="hist-summary-grid">
       <div class="hist-summary-card">
         <div class="hs-label">AVG MAX TEMP</div>
-        <div class="hs-value">${Math.round(avgMax)}°</div>
+        <div class="hs-value">${Math.round(avgMax)}</div>
       </div>
       <div class="hist-summary-card">
         <div class="hs-label">AVG MIN TEMP</div>
-        <div class="hs-value">${Math.round(avgMin)}°</div>
+        <div class="hs-value">${Math.round(avgMin)}</div>
       </div>
       <div class="hist-summary-card">
         <div class="hs-label">PEAK TEMP</div>
-        <div class="hs-value">${Math.round(maxTemp)}°</div>
+        <div class="hs-value">${Math.round(maxTemp)}</div>
       </div>
       <div class="hist-summary-card">
         <div class="hs-label">LOWEST TEMP</div>
-        <div class="hs-value">${Math.round(minTemp)}°</div>
+        <div class="hs-value">${Math.round(minTemp)}</div>
       </div>
       <div class="hist-summary-card">
         <div class="hs-label">TOTAL PRECIP</div>
@@ -1219,7 +1209,7 @@ function renderHistorical(data, start, end) {
   });
 }
 
-// ── UNIT TOGGLE ──
+// -- UNIT TOGGLE --
 function initUnitToggle() {
   $('celsiusBtn').addEventListener('click', () => {
     if (STATE.isCelsius) return;
@@ -1247,7 +1237,7 @@ function initUnitToggle() {
   });
 }
 
-// ── FORECAST TABS ──
+// -- FORECAST TABS --
 function initTabs() {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1259,104 +1249,12 @@ function initTabs() {
   });
 }
 
-// ── FAVORITES ──
-function initFavorites() {
-  updateFavoriteBar();
-
-  $('addFavBtn').addEventListener('click', () => {
-    if (!STATE.lat) { showToast('⚠ LOAD A LOCATION FIRST', true); return; }
-    const fav = { city: STATE.city, country: STATE.country, lat: STATE.lat, lon: STATE.lon };
-    if (STATE.favorites.find(f => f.city === fav.city)) {
-      showToast('⚠ ALREADY IN FAVORITES', true);
-      return;
-    }
-    STATE.favorites.push(fav);
-    saveFavorites();
-    updateFavoriteBar();
-    showToast(`⭐ ${STATE.city.toUpperCase()} SAVED`, false);
-  });
-
-  $('favoritesBtn').addEventListener('click', () => {
-    renderFavModal();
-    $('favModal').classList.add('open');
-  });
-
-  $('modalClose').addEventListener('click', () => $('favModal').classList.remove('open'));
-  $('favModal').addEventListener('click', (e) => { if (e.target === $('favModal')) $('favModal').classList.remove('open'); });
-}
-
-function updateFavoriteBar() {
-  const list = $('favList');
-  if (!STATE.favorites.length) {
-    list.innerHTML = '<span style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim)">NO FAVORITES SAVED</span>';
-    return;
-  }
-  list.innerHTML = STATE.favorites.map((f, i) => `
-    <div class="fav-chip" data-index="${i}">
-      📍 ${f.city}
-      <span class="fav-remove" data-remove="${i}" title="Remove">×</span>
-    </div>
-  `).join('');
-
-  list.querySelectorAll('.fav-chip').forEach((chip, i) => {
-    chip.addEventListener('click', (e) => {
-      if (e.target.dataset.remove !== undefined) return;
-      const f = STATE.favorites[i];
-      loadWeather(f.lat, f.lon, f.city, f.country);
-    });
-  });
-  list.querySelectorAll('[data-remove]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const i = parseInt(btn.dataset.remove);
-      STATE.favorites.splice(i, 1);
-      saveFavorites();
-      updateFavoriteBar();
-    });
-  });
-}
-
-function renderFavModal() {
-  const list = $('modalFavList');
-  if (!STATE.favorites.length) {
-    list.innerHTML = '<div style="font-family:var(--font-mono);font-size:13px;color:var(--text-dim);text-align:center;padding:20px">NO FAVORITES SAVED</div>';
-    return;
-  }
-  list.innerHTML = STATE.favorites.map((f, i) => `
-    <div class="modal-fav-item" data-index="${i}">
-      <span>📍 ${f.city}${f.country ? ', ' + f.country : ''}</span>
-      <span style="color:var(--text-dim);font-size:11px">${f.lat.toFixed(2)}, ${f.lon.toFixed(2)}</span>
-    </div>
-  `).join('');
-  list.querySelectorAll('.modal-fav-item').forEach((el, i) => {
-    el.addEventListener('click', () => {
-      const f = STATE.favorites[i];
-      loadWeather(f.lat, f.lon, f.city, f.country);
-      $('favModal').classList.remove('open');
-    });
-  });
-}
-
-function saveFavorites() {
-  localStorage.setItem('vata_favorites', JSON.stringify(STATE.favorites));
-}
-
-// ── SOUND ──
-function initSound() {
-  $('soundToggle').addEventListener('click', () => {
-    STATE.soundEnabled = !STATE.soundEnabled;
-    $('soundToggle').style.color = STATE.soundEnabled ? 'var(--neon-green)' : 'var(--neon-purple)';
-    $('soundToggle').style.textShadow = STATE.soundEnabled ? '0 0 10px var(--neon-green)' : '';
-    showToast(STATE.soundEnabled ? '🔊 SOUND ON' : '🔇 SOUND OFF', false);
-  });
-}
-
-// ── FOOTER ──
+// -- FOOTER --
 function updateFooter(lat, lon) {
   $('footerCoords').textContent = `SYS: ONLINE | LAT: ${lat.toFixed(4)} | LON: ${lon.toFixed(4)}`;
 }
 
-// ── TOAST ──
+// -- TOAST --
 let toastTimer;
 function showToast(msg, isError = false) {
   let toast = document.querySelector('.toast');
@@ -1372,7 +1270,7 @@ function showToast(msg, isError = false) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
 }
 
-// ── UTILS ──
+// -- UTILS --
 function c2f(c) { return (c * 9/5) + 32; }
 
 function degToCompass(deg) {
@@ -1414,7 +1312,7 @@ function aqiColor(aqi) {
   return '#ff0000';
 }
 
-// ── GSAP ANIMATIONS ──
+// -- GSAP ANIMATIONS --
 function initAnimations() {
   if (typeof gsap === 'undefined') return;
   gsap.registerPlugin(ScrollTrigger);
@@ -1425,7 +1323,7 @@ function initAnimations() {
   gsap.from('.air-card', { opacity: 0, x: -30, duration: 0.7, delay: 0.6, ease: 'power2.out' });
 }
 
-// ── KEYBOARD SHORTCUTS ──
+// -- KEYBOARD SHORTCUTS --
 function initKeyboard() {
   document.addEventListener('keydown', (e) => {
     if (e.key === '/' && document.activeElement !== $('searchInput')) {
@@ -1439,7 +1337,7 @@ function initKeyboard() {
   });
 }
 
-// ── DEFAULT LOAD (Bhubaneswar as user location) ──
+// -- DEFAULT LOAD (Bhubaneswar as user location) --
 function loadDefaultCity() {
   // Try geolocation first
   if (navigator.geolocation) {
@@ -1459,7 +1357,7 @@ function loadDefaultCity() {
   }
 }
 
-// ── INIT APP ──
+// -- INIT APP --
 function initApp() {
   initParticles();
   initClock();
@@ -1467,8 +1365,6 @@ function initApp() {
   initSearch();
   initUnitToggle();
   initTabs();
-  initFavorites();
-  initSound();
   initHistorical();
   initMap();
   initAnimations();
@@ -1476,5 +1372,5 @@ function initApp() {
   loadDefaultCity();
 }
 
-// ── BOOT ──
+// -- BOOT --
 document.addEventListener('DOMContentLoaded', initLoader);
